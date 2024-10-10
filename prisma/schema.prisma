@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// 用户表
+model User {
+  userId     Int       @id @default(autoincrement()) @map("user_id") /// 用户ID
+  userName   String    @unique @map("user_name") /// 用户名称
+  password   String    @map("password") /// 登录密码
+  nickName   String?   @map("nick_name") /// 昵称
+  createBy   String?   @map("create_by") /// 创建者
+  createTime DateTime  @default(now()) @map("create_time") /// 创建时间
+  updateBy   String?   @map("update_by") /// 更新者
+  updateTime DateTime? @updatedAt @map("update_time") /// 更新时间
+  isDeleted  Boolean   @default(false) @map("is_deleted") /// 逻辑删除
+
+  @@map("psi_user")
+}
+
+/// 产品类别表
+model ProductCategory {
+  productCategoryId   Int       @id @default(autoincrement()) @map("product_category_id") /// 产品类别ID
+  productCategoryName String    @unique @map("product_category_name") /// 产品类别名称
+  parentId            Int?      @map("parent_id") /// 父类别ID
+  createBy            String?   @map("create_by") /// 创建者
+  createTime          DateTime  @default(now()) @map("create_time") /// 创建时间
+  updateBy            String?   @map("update_by") /// 更新者
+  updateTime          DateTime? @updatedAt @map("update_time") /// 更新时间
+  isDeleted           Boolean   @default(false) @map("is_deleted") /// 逻辑删除
+
+  @@map("psi_product_category")
+}
