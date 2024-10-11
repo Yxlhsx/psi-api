@@ -8,13 +8,22 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
+  Request,
 } from '@nestjs/common'
 import { ProductCategory } from '@prisma/client'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import {
+  ApiOperation,
+  ApiParam,
+  ApiProperty,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger'
 import { ProductCategoryService } from './product-category.service'
 import {
   AddProductCategoryDTO,
   UpdateProductCategoryDTO,
+  ProductCategoryListQuery,
 } from './product-category.dto'
 
 @ApiTags('产品类别')
@@ -24,13 +33,33 @@ export class ProductCategoryController {
     private readonly productCategoryService: ProductCategoryService,
   ) {}
 
+  @Get('list')
+  @ApiOperation({ summary: '查询产品类别列表' })
+  @ApiQuery({
+    name: 'query',
+    type: ProductCategoryListQuery,
+  })
+  async getProductCategoryList(
+    @Query('query')
+    query: ProductCategoryListQuery,
+    @Request()
+    request: any,
+  ): Promise<ProductCategory[]> {
+    console.log(query)
+
+    console.log(request.query)
+
+    return this.productCategoryService.getProductCategoryList(query)
+  }
+
   /**
    * 根据ID查询产品类别
    * @param productCategoryId 产品类别ID
    * @returns 产品类别实体
    */
-  @ApiOperation({ summary: '根据ID查询产品类别' })
   @Get(':productCategoryId')
+  @ApiOperation({ summary: '根据ID查询产品类别' })
+  @ApiParam({ name: 'productCategoryId', description: '产品类别ID' })
   async getProductCategoryById(
     @Param('productCategoryId', ParseIntPipe)
     productCategoryId: number,
@@ -47,32 +76,35 @@ export class ProductCategoryController {
     return productCategory
   }
 
-  @ApiOperation({ summary: '查询产品类别列表' })
-  @Get('list')
-  async getProductCategories(): Promise<ProductCategory[]> {
-    return this.productCategoryService.users({})
-  }
-
   /**
    * 新增产品类别
    * @param addProductCategoryDTO 新增产品类别DTO
    * @returns 产品类别
    */
-  @ApiOperation({ summary: '新增产品类别' })
   @Post('')
+  @ApiOperation({ summary: '新增产品类别' })
   async addProductCategory(
     @Body()
     addProductCategoryDTO: AddProductCategoryDTO,
-  ): Promise<ProductCategory> {
-    return this.productCategoryService.createUser(addProductCategoryDTO)
+  ): Promise<string> {
+    const newProductCategory =
+      await this.productCategoryService.addProductCategory(
+        addProductCategoryDTO,
+      )
+
+    if (newProductCategory.parentId) {
+      return '新增成功'
+    }
+
+    return '新增失败'
   }
 
   /**
    * 修改产品类别
    * @param updateProductCategoryDTO 修改产品类别DTO
    */
-  @ApiOperation({ summary: '修改产品类别' })
   @Put('')
+  @ApiOperation({ summary: '修改产品类别' })
   async updateProductCategory(
     @Body()
     updateProductCategoryDTO: UpdateProductCategoryDTO,
@@ -87,8 +119,8 @@ export class ProductCategoryController {
    * 删除产品类别
    * @param productCategoryId 产品类别ID
    */
-  @ApiOperation({ summary: '删除产品类别' })
   @Delete(':productCategoryId')
+  @ApiOperation({ summary: '删除产品类别' })
   async delProductCategory(
     @Param('productCategoryId', ParseIntPipe)
     productCategoryId: number,

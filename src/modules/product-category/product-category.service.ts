@@ -16,6 +16,12 @@ export class ProductCategoryService {
     })
   }
 
+  async getProductCategoryList(query: Prisma.ProductCategoryWhereInput) {
+    return this.prisma.productCategory.findMany({
+      where: query,
+    })
+  }
+
   async user(
     userWhereUniqueInput: Prisma.ProductCategoryWhereUniqueInput,
   ): Promise<ProductCategory | null> {
@@ -41,7 +47,7 @@ export class ProductCategoryService {
     })
   }
 
-  async createUser(
+  async addProductCategory(
     data: Prisma.ProductCategoryCreateInput,
   ): Promise<ProductCategory> {
     return this.prisma.productCategory.create({
