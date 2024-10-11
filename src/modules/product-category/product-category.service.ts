@@ -6,6 +6,16 @@ import { ProductCategory, Prisma } from '@prisma/client'
 export class ProductCategoryService {
   constructor(private prisma: PrismaService) {}
 
+  async getProductCategoryById(
+    productCategoryId: number,
+  ): Promise<ProductCategory | null> {
+    return this.prisma.productCategory.findUnique({
+      where: {
+        productCategoryId,
+      },
+    })
+  }
+
   async user(
     userWhereUniqueInput: Prisma.ProductCategoryWhereUniqueInput,
   ): Promise<ProductCategory | null> {
