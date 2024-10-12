@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Prisma } from '@prisma/client'
 
 /**
  * 新增产品类别 DTO
@@ -26,7 +25,13 @@ export class UpdateProductCategoryDTO {
   productCategoryName: string
 }
 
-export class ProductCategoryListQuery {
+/**
+ * 查询产品类别 DTO
+ */
+export class ProductCategoryListQueryDTO {
   @ApiProperty({ description: '产品类别名称', required: false })
   productCategoryName: string
+
+  @ApiProperty({ description: '父类别ID', required: false })
+  parentId: number
 }

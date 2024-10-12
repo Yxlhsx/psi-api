@@ -1,55 +1,26 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpException,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Query,
-  Request,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common'
 import { ProductCategory } from '@prisma/client'
-import {
-  ApiOperation,
-  ApiParam,
-  ApiProperty,
-  ApiQuery,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { ProductCategoryService } from './product-category.service'
-import {
-  AddProductCategoryDTO,
-  UpdateProductCategoryDTO,
-  ProductCategoryListQuery,
-} from './product-category.dto'
+import { AddProductCategoryDTO, UpdateProductCategoryDTO, ProductCategoryListQueryDTO } from './product-category.dto'
 
 @ApiTags('产品类别')
 @Controller('product-category')
 export class ProductCategoryController {
-  constructor(
-    private readonly productCategoryService: ProductCategoryService,
-  ) {}
+  constructor(private readonly productCategoryService: ProductCategoryService) {}
 
+  /**
+   * 查询产品类别列表
+   * @param query 查询条件
+   * @returns 产品类别列表
+   */
   @Get('list')
   @ApiOperation({ summary: '查询产品类别列表' })
-  @ApiQuery({
-    name: 'query',
-    type: ProductCategoryListQuery,
-  })
   async getProductCategoryList(
-    @Query('query')
-    query: ProductCategoryListQuery,
-    @Request()
-    request: any,
+    @Query()
+    query: ProductCategoryListQueryDTO,
   ): Promise<ProductCategory[]> {
-    console.log(query)
-
-    console.log(request.query)
-
-    return this.productCategoryService.getProductCategoryList(query)
+    return this.productCategoryService.findProductCategoryList(query)
   }
 
   /**
@@ -64,13 +35,12 @@ export class ProductCategoryController {
     @Param('productCategoryId', ParseIntPipe)
     productCategoryId: number,
   ): Promise<ProductCategory> {
-    const productCategory =
-      await this.productCategoryService.getProductCategoryById(
-        productCategoryId,
-      )
+    const productCategory = await this.productCategoryService.findProductCategory({
+      productCategoryId,
+    })
 
     if (!productCategory) {
-      throw new HttpException('该数据不存在', 400)
+      throw new Error('产品类别不存在')
     }
 
     return productCategory
@@ -87,12 +57,9 @@ export class ProductCategoryController {
     @Body()
     addProductCategoryDTO: AddProductCategoryDTO,
   ): Promise<string> {
-    const newProductCategory =
-      await this.productCategoryService.addProductCategory(
-        addProductCategoryDTO,
-      )
+    const newProductCategory = await this.productCategoryService.addProductCategory(addProductCategoryDTO)
 
-    if (newProductCategory.parentId) {
+    if (newProductCategory.productCategoryId) {
       return '新增成功'
     }
 

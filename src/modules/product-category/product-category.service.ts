@@ -1,30 +1,37 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../../common/prisma/prisma.service'
 import { ProductCategory, Prisma } from '@prisma/client'
+import { PrismaService } from '@/common/prisma/prisma.service'
+import { ProductCategoryListQueryDTO } from './product-category.dto'
 
 @Injectable()
 export class ProductCategoryService {
   constructor(private prisma: PrismaService) {}
 
-  async getProductCategoryById(
-    productCategoryId: number,
-  ): Promise<ProductCategory | null> {
+  async findProductCategory(query: Prisma.ProductCategoryWhereUniqueInput) {
     return this.prisma.productCategory.findUnique({
-      where: {
-        productCategoryId,
-      },
-    })
-  }
-
-  async getProductCategoryList(query: Prisma.ProductCategoryWhereInput) {
-    return this.prisma.productCategory.findMany({
       where: query,
     })
   }
 
-  async user(
-    userWhereUniqueInput: Prisma.ProductCategoryWhereUniqueInput,
-  ): Promise<ProductCategory | null> {
+  async findProductCategoryList(query: ProductCategoryListQueryDTO) {
+    const where = {} as Prisma.ProductCategoryWhereInput
+
+    if (query.parentId) {
+      where.parentId = query.parentId
+    }
+
+    if (query.productCategoryName) {
+      where.productCategoryName = {
+        contains: query.productCategoryName,
+      }
+    }
+
+    return this.prisma.productCategory.findMany({
+      where,
+    })
+  }
+
+  async user(userWhereUniqueInput: Prisma.ProductCategoryWhereUniqueInput): Promise<ProductCategory | null> {
     return this.prisma.productCategory.findUnique({
       where: userWhereUniqueInput,
     })
@@ -47,9 +54,15 @@ export class ProductCategoryService {
     })
   }
 
-  async addProductCategory(
-    data: Prisma.ProductCategoryCreateInput,
-  ): Promise<ProductCategory> {
+  async addProductCategory(data: Prisma.ProductCategoryCreateInput): Promise<ProductCategory> {
+    const existingProductCategory = await this.findProductCategory({
+      productCategoryName: data.productCategoryName,
+    })
+
+    if (existingProductCategory) {
+      throw new Error('此产品类别已存在')
+    }
+
     return this.prisma.productCategory.create({
       data,
     })
@@ -66,9 +79,7 @@ export class ProductCategoryService {
     })
   }
 
-  async deleteUser(
-    where: Prisma.ProductCategoryWhereUniqueInput,
-  ): Promise<ProductCategory | null> {
+  async deleteUser(where: Prisma.ProductCategoryWhereUniqueInput): Promise<ProductCategory | null> {
     const existingUser = await this.prisma.productCategory.findUnique({
       where,
     })
