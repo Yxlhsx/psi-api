@@ -1,8 +1,23 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common'
 import { ProductCategory } from '@prisma/client'
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { ProductCategoryService } from './product-category.service'
-import { AddProductCategoryDTO, UpdateProductCategoryDTO, ProductCategoryListQueryDTO } from './product-category.dto'
+import {
+  AddProductCategoryDTO,
+  UpdateProductCategoryDTO,
+  ProductCategoryListQueryDTO,
+} from './product-category.dto'
 
 @ApiTags('产品类别')
 @Controller('product-category')
@@ -40,7 +55,7 @@ export class ProductCategoryController {
     })
 
     if (!productCategory) {
-      throw new Error('产品类别不存在')
+      throw new HttpException('产品类别不存在', 400)
     }
 
     return productCategory
@@ -57,13 +72,9 @@ export class ProductCategoryController {
     @Body()
     addProductCategoryDTO: AddProductCategoryDTO,
   ): Promise<string> {
-    const newProductCategory = await this.productCategoryService.addProductCategory(addProductCategoryDTO)
+    await this.productCategoryService.addProductCategory(addProductCategoryDTO)
 
-    if (newProductCategory.productCategoryId) {
-      return '新增成功'
-    }
-
-    return '新增失败'
+    return '新增成功'
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { HttpException, Injectable } from '@nestjs/common'
 import { ProductCategory, Prisma } from '@prisma/client'
 import { PrismaService } from '@/common/prisma/prisma.service'
 import { ProductCategoryListQueryDTO } from './product-category.dto'
@@ -31,7 +31,9 @@ export class ProductCategoryService {
     })
   }
 
-  async user(userWhereUniqueInput: Prisma.ProductCategoryWhereUniqueInput): Promise<ProductCategory | null> {
+  async user(
+    userWhereUniqueInput: Prisma.ProductCategoryWhereUniqueInput,
+  ): Promise<ProductCategory | null> {
     return this.prisma.productCategory.findUnique({
       where: userWhereUniqueInput,
     })
@@ -60,11 +62,18 @@ export class ProductCategoryService {
     })
 
     if (existingProductCategory) {
-      throw new Error('此产品类别已存在')
+      throw new HttpException('此产品类别已存在', 400)
     }
 
+    const newData = {} as Prisma.ProductCategoryCreateInput
+
+    if (data.parentId) {
+      newData.parentId = data.parentId
+    }
+    newData.productCategoryName = data.productCategoryName
+
     return this.prisma.productCategory.create({
-      data,
+      data: newData,
     })
   }
 

@@ -15,10 +15,7 @@ export class AuthController {
   @ApiOperation({ summary: '账密登录' })
   @Post('login')
   async login(@Body() loginUserDTO: LoginUserDTO): Result {
-    const user = await this.authService.queryUser(
-      loginUserDTO.userName,
-      loginUserDTO.password,
-    )
+    const user = await this.authService.queryUser(loginUserDTO.userName, loginUserDTO.password)
 
     if (user === null) {
       return {
