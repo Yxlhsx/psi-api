@@ -1,5 +1,5 @@
-import { HttpException, Injectable } from '@nestjs/common'
 import { ProductCategory, Prisma } from '@prisma/client'
+import { HttpException, Injectable } from '@nestjs/common'
 import { PrismaService } from '@/common/prisma/prisma.service'
 import { ProductCategoryListQueryDTO } from './product-category.dto'
 
@@ -28,31 +28,6 @@ export class ProductCategoryService {
 
     return this.prisma.productCategory.findMany({
       where,
-    })
-  }
-
-  async user(
-    userWhereUniqueInput: Prisma.ProductCategoryWhereUniqueInput,
-  ): Promise<ProductCategory | null> {
-    return this.prisma.productCategory.findUnique({
-      where: userWhereUniqueInput,
-    })
-  }
-
-  async users(params: {
-    skip?: number
-    take?: number
-    cursor?: Prisma.ProductCategoryWhereUniqueInput
-    where?: Prisma.ProductCategoryWhereInput
-    orderBy?: Prisma.ProductCategoryOrderByWithRelationInput
-  }): Promise<ProductCategory[]> {
-    const { skip, take, cursor, where, orderBy } = params
-    return this.prisma.productCategory.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
     })
   }
 
@@ -88,17 +63,21 @@ export class ProductCategoryService {
     })
   }
 
-  async deleteUser(where: Prisma.ProductCategoryWhereUniqueInput): Promise<ProductCategory | null> {
-    const existingUser = await this.prisma.productCategory.findUnique({
-      where,
+  async delProductCategory(productCategoryId: number) {
+    const existingProductCategory = await this.prisma.productCategory.findUnique({
+      where: {
+        productCategoryId,
+      },
     })
 
-    if (!existingUser) {
-      throw new Error('User not found')
+    if (!existingProductCategory) {
+      throw new HttpException('此产品类别不存在', 400)
     }
 
     return this.prisma.productCategory.delete({
-      where,
+      where: {
+        productCategoryId,
+      },
     })
   }
 }

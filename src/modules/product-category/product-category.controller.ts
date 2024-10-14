@@ -66,7 +66,7 @@ export class ProductCategoryController {
    * @param addProductCategoryDTO 新增产品类别DTO
    * @returns 产品类别
    */
-  @Post('')
+  @Post()
   @ApiOperation({ summary: '新增产品类别' })
   async addProductCategory(
     @Body()
@@ -81,7 +81,7 @@ export class ProductCategoryController {
    * 修改产品类别
    * @param updateProductCategoryDTO 修改产品类别DTO
    */
-  @Put('')
+  @Put()
   @ApiOperation({ summary: '修改产品类别' })
   async updateProductCategory(
     @Body()
@@ -99,10 +99,11 @@ export class ProductCategoryController {
    */
   @Delete(':productCategoryId')
   @ApiOperation({ summary: '删除产品类别' })
+  @ApiParam({ name: 'productCategoryId', description: '产品类别ID' })
   async delProductCategory(
     @Param('productCategoryId', ParseIntPipe)
     productCategoryId: number,
   ): Promise<void> {
-    await this.productCategoryService.deleteUser({ productCategoryId })
+    await this.productCategoryService.delProductCategory(productCategoryId)
   }
 }
