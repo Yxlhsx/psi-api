@@ -7,14 +7,18 @@ import { ProductCategoryListQueryDTO } from './product-category.dto'
 export class ProductCategoryService {
   constructor(private prisma: PrismaService) {}
 
-  async findProductCategory(query: Prisma.ProductCategoryWhereUniqueInput) {
+  async find(where: Prisma.ProductCategoryWhereUniqueInput) {
+    where.isDeleted = false
+
     return this.prisma.productCategory.findUnique({
-      where: query,
+      where,
     })
   }
 
-  async findProductCategoryList(query: ProductCategoryListQueryDTO) {
-    const where = {} as Prisma.ProductCategoryWhereInput
+  async findList(query: ProductCategoryListQueryDTO) {
+    const where = {
+      isDeleted: false,
+    } as Prisma.ProductCategoryWhereInput
 
     if (query.parentId) {
       where.parentId = query.parentId
@@ -27,13 +31,24 @@ export class ProductCategoryService {
     }
 
     return this.prisma.productCategory.findMany({
+      select: {
+        productCategoryId: true,
+        productCategoryName: true,
+        parentId: true,
+        createTime: true,
+      },
       where,
+      orderBy: {
+        createTime: 'desc',
+      },
     })
   }
 
-  async addProductCategory(data: Prisma.ProductCategoryCreateInput): Promise<ProductCategory> {
-    const existingProductCategory = await this.findProductCategory({
-      productCategoryName: data.productCategoryName,
+  async add(data: Prisma.ProductCategoryCreateInput): Promise<ProductCategory> {
+    const existingProductCategory = await this.prisma.productCategory.findFirst({
+      where: {
+        productCategoryName: data.productCategoryName,
+      },
     })
 
     if (existingProductCategory) {
@@ -63,10 +78,11 @@ export class ProductCategoryService {
     })
   }
 
-  async delProductCategory(productCategoryId: number) {
+  async del(productCategoryId: number) {
     const existingProductCategory = await this.prisma.productCategory.findUnique({
       where: {
         productCategoryId,
+        isDeleted: false,
       },
     })
 
@@ -74,9 +90,12 @@ export class ProductCategoryService {
       throw new HttpException('此产品类别不存在', 400)
     }
 
-    return this.prisma.productCategory.delete({
+    return this.prisma.productCategory.update({
       where: {
-        productCategoryId,
+        productCategoryId: existingProductCategory.productCategoryId,
+      },
+      data: {
+        isDeleted: true,
       },
     })
   }

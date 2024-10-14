@@ -1,5 +1,5 @@
 import { ProductCategory } from '@prisma/client'
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 import {
   Body,
   Controller,
@@ -18,6 +18,7 @@ import {
   UpdateProductCategoryDTO,
   ProductCategoryListQueryDTO,
 } from './product-category.dto'
+import { ProductCategoryListVO } from './product-category.vo'
 
 @ApiTags('产品类别')
 @Controller('product-category')
@@ -31,11 +32,12 @@ export class ProductCategoryController {
    */
   @Get('list')
   @ApiOperation({ summary: '查询产品类别列表' })
+  @ApiResponse({ type: ProductCategoryListVO })
   async getProductCategoryList(
     @Query()
     query: ProductCategoryListQueryDTO,
-  ): Promise<ProductCategory[]> {
-    return this.productCategoryService.findProductCategoryList(query)
+  ) {
+    return this.productCategoryService.findList(query)
   }
 
   /**
@@ -46,11 +48,12 @@ export class ProductCategoryController {
   @Get(':productCategoryId')
   @ApiOperation({ summary: '根据ID查询产品类别' })
   @ApiParam({ name: 'productCategoryId', description: '产品类别ID' })
+  @ApiResponse({ status: 400, example: '产品类别不存在' })
   async getProductCategoryById(
     @Param('productCategoryId', ParseIntPipe)
     productCategoryId: number,
   ): Promise<ProductCategory> {
-    const productCategory = await this.productCategoryService.findProductCategory({
+    const productCategory = await this.productCategoryService.find({
       productCategoryId,
     })
 
@@ -72,7 +75,7 @@ export class ProductCategoryController {
     @Body()
     addProductCategoryDTO: AddProductCategoryDTO,
   ): Promise<string> {
-    await this.productCategoryService.addProductCategory(addProductCategoryDTO)
+    await this.productCategoryService.add(addProductCategoryDTO)
 
     return '新增成功'
   }
@@ -104,6 +107,6 @@ export class ProductCategoryController {
     @Param('productCategoryId', ParseIntPipe)
     productCategoryId: number,
   ): Promise<void> {
-    await this.productCategoryService.delProductCategory(productCategoryId)
+    await this.productCategoryService.del(productCategoryId)
   }
 }
